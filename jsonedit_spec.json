@@ -436,10 +436,7 @@
       "apply-button": true,
       "keyboard-shortcut": "Ctrl-Enter",
       "scope": "global",
-      "override-widget-defaults": true,
-      "applies-when-focus-is": [
-        "text-pane"
-      ]
+      "override-widget-defaults": true
     },
     "validation": {
       "on-commit": true,
@@ -449,7 +446,11 @@
         "column": true,
         "message": true
       }
-    }
+    },
+    "notes": [
+      "Ctrl-Enter is intentionally global and always applies the current text pane contents, regardless of focus.",
+      "This provides a reliable, focus-independent commit mechanism."
+    ]
   },
   "operations": {
     "select-node": {
@@ -466,7 +467,10 @@
       "effect": "rebuild tree view"
     },
     "raise-structural-item": {
-      "input": "selected-node",
+      "input": {
+        "source": "selected-node",
+        "requires-focus": "tree-pane"
+      },
       "applies-to": [
         "object-key",
         "array-element"
@@ -492,7 +496,10 @@
       ]
     },
     "lower-structural-item": {
-      "input": "selected-node",
+      "input": {
+        "source": "selected-node",
+        "requires-focus": "tree-pane"
+      },
       "applies-to": [
         "object-key",
         "array-element"
@@ -514,7 +521,10 @@
       "undoable": true
     },
     "insert-structural-item-after": {
-      "input": "selected-node",
+      "input": {
+        "source": "selected-node",
+        "requires-focus": "tree-pane"
+      },
       "applies-to": [
         "object-key",
         "array-element"
@@ -559,7 +569,10 @@
       ]
     },
     "rename-structural-key": {
-      "input": "selected-node",
+      "input": {
+        "source": "selected-node",
+        "requires-focus": "tree-pane"
+      },
       "applies-to": [
         "object-key"
       ],
@@ -587,7 +600,10 @@
       ]
     },
     "delete-structural-item": {
-      "input": "selected-node",
+      "input": {
+        "source": "selected-node",
+        "requires-focus": "tree-pane"
+      },
       "applies-to": [
         "object-key",
         "array-element"
@@ -622,7 +638,10 @@
       ]
     },
     "duplicate-structural-item": {
-      "input": "selected-node",
+      "input": {
+        "source": "selected-node",
+        "requires-focus": "tree-pane"
+      },
       "applies-to": [
         "object-key",
         "array-element"
@@ -657,7 +676,11 @@
         "The value is a deep copy of the original.",
         "If the root is selected, the operation is a no-op."
       ]
-    }
+    },
+    "notes": [
+      "Structural operations are only valid when the tree pane has keyboard focus.",
+      "If invoked while focus is elsewhere, the operation is a no-op."
+    ]
   },
   "undo-redo": {
     "enabled": false,
@@ -706,6 +729,44 @@
     "schema-support": {
       "enabled": false,
       "description": "Optional JSON Schema validation and hints"
+    }
+  },
+  "keyboard-policy": {
+    "focus-is-authority": true,
+    "event-consumption": {
+      "structural-operations": {
+        "consume-key-event": true,
+        "suppress-default-widget-behavior": true
+      }
+    },
+    "scoping-rules": {
+      "tree-pane": {
+        "allowed-actions": [
+          "structural-operations",
+          "navigation"
+        ]
+      },
+      "text-pane": {
+        "allowed-actions": [
+          "text-editing",
+          "commit-edit"
+        ],
+        "disallowed-actions": [
+          "structural-operations"
+        ]
+      }
+    },
+    "notes": {
+      "focus-based-shortcut-scoping": [
+        "Keyboard shortcuts apply only when their associated widget has focus.",
+        "Structural operations must not trigger while focus is in the text pane.",
+        "This prevents accidental document mutation during text editing."
+      ],
+      "keyboard-event-consumption": [
+        "Structural keyboard shortcuts must fully consume their key events.",
+        "Default widget navigation behavior must not occur after a structural operation.",
+        "This prevents unintended selection movement following structural edits."
+      ]
     }
   },
   "user-prompts": {

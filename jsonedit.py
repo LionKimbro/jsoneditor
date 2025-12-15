@@ -968,12 +968,12 @@ def setup_gui():
     root.bind_all("<Control-q>", lambda e: exit_application())
     root.bind_all("<Control-h>", lambda e: display_help())
 
-    root.bind_all("<Control-Up>", lambda e: raise_structural_item())
-    root.bind_all("<Control-Down>", lambda e: lower_structural_item())
-    root.bind_all("<Control-Right>", lambda e: insert_structural_item_after())
-    root.bind_all("<Control-d>", lambda e: duplicate_structural_item())
-    root.bind_all("<Control-r>", lambda e: rename_structural_key())
-    root.bind_all("<Delete>", lambda e: delete_structural_item())
+    tree.bind("<Control-Up>", on_ctrl_up)
+    tree.bind("<Control-Down>", on_ctrl_down)
+    tree.bind("<Control-Right>", on_ctrl_right)
+    tree.bind("<Control-d>", on_ctrl_d)
+    tree.bind("<Delete>", on_delete)
+    tree.bind("<Control-r>", on_ctrl_r)
 
     # commit controls: Ctrl+Enter when focus is in text
     text.bind("<Control-Return>", apply_text_to_tree)
@@ -981,6 +981,31 @@ def setup_gui():
 
     refresh_menu_enablement()
     set_title()
+
+
+def on_ctrl_up(event):
+    raise_structural_item()
+    return "break"
+
+def on_ctrl_down(event):
+    lower_structural_item()
+    return "break"
+
+def on_ctrl_right(event):
+    insert_structural_item_after()
+    return "break"
+
+def on_ctrl_d(event):
+    duplicate_structural_item()
+    return "break"
+
+def on_delete(event):
+    delete_structural_item()
+    return "break"
+
+def on_ctrl_r(event):
+    rename_structural_key()
+    return "break"
 
 
 # ----------------------------
