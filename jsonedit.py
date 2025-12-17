@@ -533,12 +533,21 @@ def exit_application():
 # clipboard ops
 # ----------------------------
 
+def write_clipboard(s):
+    try:
+        import pyperclip
+    except ImportError:
+        root = widgets["root"]
+        root.clipboard_clear()
+        root.clipboard_append(s)
+    else:
+        pyperclip.copy(s)
+
 def copy_entire_document(flags="P"):
     if not is_doc_loaded():
         return
     s = pretty(g["doc"], indent=2) if flags != "C" else compact(g["doc"])
-    widgets["root"].clipboard_clear()
-    widgets["root"].clipboard_append(s)
+    write_clipboard(s)
     set_status("copied", "V")
     set_status("", "E")
 
@@ -547,8 +556,7 @@ def copy_selected_subtree():
         return
     obj = get_at_path(g["selected_path"])
     s = pretty(obj, indent=2)
-    widgets["root"].clipboard_clear()
-    widgets["root"].clipboard_append(s)
+    write_clipboard(s)
     set_status("copied node", "V")
     set_status("", "E")
 

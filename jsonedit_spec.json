@@ -9,6 +9,13 @@
     "version": "0.1-draft",
     "language": "python",
     "ui-framework": "tkinter",
+    "programming-pragmatics": {
+      "pyperclip": [
+        "if pyperclip is available, use it for clipboard copy operations,",
+        "because Tk doesn't copy to the clipboard right away,",
+        "and clipboard writes fail when the application closes"
+      ]
+    },
     "purpose": "General-purpose JSON editor with synchronized node<->text views",
     "development-conversations": {
       "2025-12-14": [
