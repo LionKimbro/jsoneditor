@@ -725,7 +725,7 @@ def insert_structural_item_after():
         set_at_path(pp, new_parent)
         np = pp + (k,)
         refresh_tree(preserve_open=True, reselect_path=False)
-        select_path(np, refresh_text=True, cursor="select-entire-value", selection="none")
+        select_path(np, "TS")
         widgets["text"].focus_set()
         return
 
@@ -768,7 +768,7 @@ def duplicate_structural_item():
 
         np = pp + (k,)
         refresh_tree(preserve_open=True, reselect_path=False)
-        select_path(np, refresh_text=True, cursor="select-entire-value", selection="none")
+        select_path(np, "TS")
         widgets["tree"].focus_set()
         return
 
