@@ -468,6 +468,7 @@ def open_file():
     g["selected_path"] = tuple()
     g["selected_kind"] = "root"
     set_status("loaded", "V")
+    set_status("", "E")
     set_status(path_to_str(g["selected_path"]), "p")
     refresh_tree(preserve_open=False, reselect_path=False)
     select_path(tuple(), "T")
@@ -494,6 +495,7 @@ def save_file():
         return
 
     set_status("saved", "V")
+    set_status("", "E")
     set_title()
 
 def create_from_clipboard():
@@ -517,6 +519,7 @@ def create_from_clipboard():
     g["selected_path"] = tuple()
     g["selected_kind"] = "root"
     set_status("created", "V")
+    set_status("", "E")
     set_status(path_to_str(g["selected_path"]), "p")
     refresh_tree(preserve_open=False, reselect_path=False)
     select_path(tuple(), "T")
@@ -537,6 +540,7 @@ def copy_entire_document(flags="P"):
     widgets["root"].clipboard_clear()
     widgets["root"].clipboard_append(s)
     set_status("copied", "V")
+    set_status("", "E")
 
 def copy_selected_subtree():
     if not is_doc_loaded() or not is_selected():
@@ -546,6 +550,7 @@ def copy_selected_subtree():
     widgets["root"].clipboard_clear()
     widgets["root"].clipboard_append(s)
     set_status("copied node", "V")
+    set_status("", "E")
 
 
 # ----------------------------
@@ -576,6 +581,7 @@ def apply_text_to_tree(event=None):
         set_at_path(p, obj)
 
     set_status("valid", "V")
+    set_status("", "E")
     mark_text_dirty(0)
 
     # Tree refresh: preserve open nodes, reselect updated node
@@ -1269,6 +1275,8 @@ def main():
     # start empty
     g["doc"] = None
     set_status("(no document)", "V")
+    set_status("", "E")
+    set_status("", "p")
 
     root.mainloop()
 
