@@ -307,7 +307,9 @@ def restore_expanded_paths():
         if iid:
             widgets["tree"].item(iid, open=True)
 
-def refresh_tree(preserve_open=True, reselect_path=True):
+def refresh_tree(flags=""):
+    preserve_open = "O" in flags
+    reselect_path = "p" in flags
     sel = g["selected_path"]
     if preserve_open:
         remember_expanded_paths()
@@ -470,7 +472,7 @@ def open_file():
     set_status("loaded", "V")
     set_status("", "E")
     set_status(path_to_str(g["selected_path"]), "p")
-    refresh_tree(preserve_open=False, reselect_path=False)
+    refresh_tree()
     select_path(tuple(), "T")
     set_title()
 
@@ -521,7 +523,7 @@ def create_from_clipboard():
     set_status("created", "V")
     set_status("", "E")
     set_status(path_to_str(g["selected_path"]), "p")
-    refresh_tree(preserve_open=False, reselect_path=False)
+    refresh_tree()
     select_path(tuple(), "T")
     set_title()
 
@@ -551,11 +553,11 @@ def copy_entire_document(flags="P"):
     set_status("copied", "V")
     set_status("", "E")
 
-def copy_selected_subtree():
+def copy_selected_subtree(flags="P"):
     if not is_doc_loaded() or not is_selected():
         return
     obj = get_at_path(g["selected_path"])
-    s = pretty(obj, indent=2)
+    s = pretty(obj, indent=2) if flags != "C" else compact(obj)
     write_clipboard(s)
     set_status("copied node", "V")
     set_status("", "E")
@@ -593,8 +595,7 @@ def apply_text_to_tree(event=None):
     mark_text_dirty(0)
 
     # Tree refresh: preserve open nodes, reselect updated node
-    refresh_tree(preserve_open=True, reselect_path=False)
-    select_path(p)
+    refresh_tree("Op")
     return "break"
 
 
@@ -644,7 +645,7 @@ def raise_structural_item():
         j = (i - 1) % len(parent)
         parent[i], parent[j] = parent[j], parent[i]
         np = pp + (j,)
-        refresh_tree(preserve_open=True, reselect_path=False)
+        refresh_tree("O")
         select_path(np)
         return
 
@@ -660,7 +661,7 @@ def raise_structural_item():
         for kk in keys:
             new_parent[kk] = parent[kk]
         set_at_path(pp, new_parent)
-        refresh_tree(preserve_open=True, reselect_path=False)
+        refresh_tree("O")
         select_path(p)
         return
 
@@ -680,7 +681,7 @@ def lower_structural_item():
         j = (i + 1) % len(parent)
         parent[i], parent[j] = parent[j], parent[i]
         np = pp + (j,)
-        refresh_tree(preserve_open=True, reselect_path=False)
+        refresh_tree("O")
         select_path(np)
         return
 
@@ -696,7 +697,7 @@ def lower_structural_item():
         for kk in keys:
             new_parent[kk] = parent[kk]
         set_at_path(pp, new_parent)
-        refresh_tree(preserve_open=True, reselect_path=False)
+        refresh_tree("O")
         select_path(p)
         return
 
@@ -711,7 +712,7 @@ def insert_structural_item_after():
         i = last_key(p)
         parent.insert(i + 1, None)
         np = pp + (i + 1,)
-        refresh_tree(preserve_open=True, reselect_path=False)
+        refresh_tree("O")
         # new node policy: refresh + select entire value
         select_path(np, "TS")
         widgets["text"].focus_set()
@@ -738,7 +739,7 @@ def insert_structural_item_after():
                 new_parent[kk] = parent[kk]
         set_at_path(pp, new_parent)
         np = pp + (k,)
-        refresh_tree(preserve_open=True, reselect_path=False)
+        refresh_tree("O")
         select_path(np, "TS")
         widgets["text"].focus_set()
         return
@@ -754,7 +755,7 @@ def duplicate_structural_item():
         i = last_key(p)
         parent.insert(i + 1, deep_copy(parent[i]))
         np = pp + (i + 1,)
-        refresh_tree(preserve_open=True, reselect_path=False)
+        refresh_tree("O")
         select_path(np, "TS")
         widgets["tree"].focus_set()
         return
@@ -781,7 +782,7 @@ def duplicate_structural_item():
         set_at_path(pp, new_parent)
 
         np = pp + (k,)
-        refresh_tree(preserve_open=True, reselect_path=False)
+        refresh_tree("O")
         select_path(np, "TS")
         widgets["tree"].focus_set()
         return
@@ -820,7 +821,7 @@ def rename_structural_key():
     set_at_path(pp, new_parent)
 
     np = pp + (k,)
-    refresh_tree(preserve_open=True, reselect_path=False)
+    refresh_tree("O")
     # rename: text untouched
     select_path(np)
     return
@@ -872,7 +873,7 @@ def delete_structural_item():
     np, classification = pick_selection_after_delete(pp, removed)
 
     # refresh tree
-    refresh_tree(preserve_open=True, reselect_path=False)
+    refresh_tree("O")
 
     # delete note: avoid losing uncommitted edits if text_dirty
     if g["text_dirty"]:
@@ -1157,15 +1158,17 @@ def setup_gui():
     b1 = ttk.Button(actions, text="Copy Tree", command=lambda: copy_entire_document("P"))
     b2 = ttk.Button(actions, text="Copy Tree (compressed)", command=lambda: copy_entire_document("C"))
     b3 = ttk.Button(actions, text="Copy Node", command=copy_selected_subtree)
-    b4 = ttk.Button(actions, text="Update Tree", command=apply_text_to_tree)
-    b5 = ttk.Button(actions, text="Emit", command=lambda: None)
-    b5.state(["disabled"])  # placeholder
+    b4 = ttk.Button(actions, text="Copy Node (compressed)", command=lambda: copy_selected_subtree("C"))    
+    b5 = ttk.Button(actions, text="Update Tree", command=apply_text_to_tree)
+    b6 = ttk.Button(actions, text="Emit", command=lambda: None)
+    b6.state(["disabled"])  # placeholder
 
     b1.grid(row=0, column=0, padx=4)
     b2.grid(row=0, column=1, padx=4)
     b3.grid(row=0, column=2, padx=4)
-    b4.grid(row=0, column=3, padx=16)
-    b5.grid(row=0, column=4, padx=4)
+    b4.grid(row=0, column=3, padx=4)
+    b5.grid(row=0, column=4, padx=16)
+    b6.grid(row=0, column=5, padx=4)
 
     # ---- status bar
     status = ttk.Frame(root)

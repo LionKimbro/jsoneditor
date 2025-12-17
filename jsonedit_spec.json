@@ -437,6 +437,14 @@
               "enabled": true
             },
             {
+              "id": "copy_node_compressed_button",
+              "label": "Copy Node (compressed)",
+              "action": "copy_selected_subtree_compressed",
+              "target": "clipboard",
+              "format": "JSON, indent: 0",
+              "enabled": true
+            },
+            {
               "id": "update_tree_button",
               "label": "Update Tree",
               "action": "apply_text_to_tree",
