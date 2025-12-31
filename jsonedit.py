@@ -1205,7 +1205,7 @@ def setup_gui():
     tree.bind("<<TreeviewSelect>>", handle_tree_selection_changed)
 
     root.bind_all("<Control-o>", lambda e: handle_open_file_command())
-    root.bind_all("<Control-Shift-1>", lambda e: handle_reload_file_command())
+    root.bind_all("<Control-!>", lambda e: handle_reload_file_command())
     root.bind_all("<Control-s>", lambda e: save_file())
     root.bind_all("<Control-n>", lambda e: create_from_clipboard())
     root.bind_all("<Control-q>", lambda e: exit_application())
