@@ -443,15 +443,27 @@ def handle_text_modified(event=None):
 # file i/o
 # ----------------------------
 
-def open_file():
+def handle_open_file_command():
     p = filedialog.askopenfilename(
         title="Open JSON",
         filetypes=[("JSON files", "*.json"), ("Text files", "*.txt"), ("All files", "*.*")]
     )
     if not p:
         return
+    open_file(Path(p))
+
+
+def handle_reload_file_command():
+    if not g["file_path"]:
+        messagebox.showerror("Reload", "No file loaded previously.")
+        return
+    open_file(g["file_path"])
+
+
+def open_file(p: Path):
+    is_reloading = (p == g["file_path"])
     try:
-        s = Path(p).read_text(encoding="utf-8")
+        s = p.read_text(encoding="utf-8")
     except Exception as e:
         messagebox.showerror("Open", f"Could not read file:\n{e}")
         return
@@ -466,15 +478,18 @@ def open_file():
 
     g["doc"] = obj
     g["embedded_editor_config"] = extract_embedded_editor_config(g["doc"])
-    g["file_path"] = Path(p)
+    g["file_path"] = p
     g["selected_path"] = tuple()
     g["selected_kind"] = "root"
-    set_status("loaded", "V")
+
+    set_status("reloaded" if is_reloading else "loaded", "V")
     set_status("", "E")
     set_status(path_to_str(g["selected_path"]), "p")
+
     refresh_tree()
     select_path(tuple(), "T")
     set_title()
+
 
 def save_file():
     if not is_doc_loaded():
@@ -1083,31 +1098,32 @@ def setup_gui():
 
     file_menu = tk.Menu(menubar)
     widgets["file_menu"] = file_menu
-    file_menu.add_command(label="Open", accelerator="Ctrl+O", command=open_file)
-    file_menu.add_command(label="Save", accelerator="Ctrl+S", command=save_file)
+    file_menu.add_command(label="Open", underline=0, command=handle_open_file_command)
+    file_menu.add_command(label="Reload", underline=0, command=handle_reload_file_command)
+    file_menu.add_command(label="Save", underline=0, command=save_file)
     file_menu.add_separator()
-    file_menu.add_command(label="Create from Clipboard", accelerator="Ctrl+N", command=create_from_clipboard)
+    file_menu.add_command(label="Create from Clipboard", underline=12, command=create_from_clipboard)
     file_menu.add_separator()
-    file_menu.add_command(label="Exit", accelerator="Ctrl+Q", command=exit_application)
-    menubar.add_cascade(label="File", menu=file_menu)
+    file_menu.add_command(label="Exit", underline=1, command=exit_application)
+    menubar.add_cascade(label="File", underline=0, menu=file_menu)
 
     edit_menu = tk.Menu(menubar)
     widgets["edit_menu"] = edit_menu
-    edit_menu.add_command(label="Search…", accelerator="Ctrl+F", command=action_find_key)
-    edit_menu.add_command(label="Repeat Search", accelerator="Shift+Ctrl+F", command=action_repeat_find_key)
+    edit_menu.add_command(label="Search…", underline=0, command=action_find_key)
+    edit_menu.add_command(label="Repeat Search", command=action_repeat_find_key)
     edit_menu.add_separator()
-    edit_menu.add_command(label="Raise Item", accelerator="Ctrl+Up", command=raise_structural_item)
-    edit_menu.add_command(label="Rename Key", accelerator="Ctrl+R", command=rename_structural_key)
-    edit_menu.add_command(label="Delete Item", accelerator="Delete", command=delete_structural_item)
-    edit_menu.add_command(label="Duplicate Item", accelerator="Ctrl+D", command=duplicate_structural_item)
-    edit_menu.add_command(label="Insert Item After", accelerator="Ctrl+Right", command=insert_structural_item_after)
-    edit_menu.add_command(label="Lower Item", accelerator="Ctrl+Down", command=lower_structural_item)
-    menubar.add_cascade(label="Edit", menu=edit_menu)
+    edit_menu.add_command(label="Raise Item", command=raise_structural_item)
+    edit_menu.add_command(label="Rename Key", command=rename_structural_key)
+    edit_menu.add_command(label="Delete Item", command=delete_structural_item)
+    edit_menu.add_command(label="Duplicate Item", command=duplicate_structural_item)
+    edit_menu.add_command(label="Insert Item After", command=insert_structural_item_after)
+    edit_menu.add_command(label="Lower Item", command=lower_structural_item)
+    menubar.add_cascade(label="Edit", underline=0, menu=edit_menu)
 
     help_menu = tk.Menu(menubar)
     widgets["help_menu"] = help_menu
-    help_menu.add_command(label="Help", accelerator="Ctrl+H", command=display_help)
-    menubar.add_cascade(label="Help", menu=help_menu)
+    help_menu.add_command(label="Help", underline=0, command=display_help)
+    menubar.add_cascade(label="Help", underline=0, menu=help_menu)
 
     root.config(menu=menubar)
 
@@ -1188,7 +1204,8 @@ def setup_gui():
     # ---- bindings
     tree.bind("<<TreeviewSelect>>", handle_tree_selection_changed)
 
-    root.bind_all("<Control-o>", lambda e: open_file())
+    root.bind_all("<Control-o>", lambda e: handle_open_file_command())
+    root.bind_all("<Control-Shift-1>", lambda e: handle_reload_file_command())
     root.bind_all("<Control-s>", lambda e: save_file())
     root.bind_all("<Control-n>", lambda e: create_from_clipboard())
     root.bind_all("<Control-q>", lambda e: exit_application())
