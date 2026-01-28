@@ -1150,16 +1150,12 @@ def setup_gui():
 
     root.config(menu=menubar)
 
-    # ---- editor region: horizontal split
-    editor = ttk.Frame(root)
+    # ---- editor region: horizontal split (resizable)
+    editor = ttk.PanedWindow(root, orient="horizontal")
     editor.grid(row=0, column=0, sticky="nsew")
-    editor.grid_rowconfigure(0, weight=1)
-    editor.grid_columnconfigure(0, weight=1)
-    editor.grid_columnconfigure(1, weight=1)
 
     # tree pane
     tree_frame = ttk.Frame(editor)
-    tree_frame.grid(row=0, column=0, sticky="nsew")
     tree_frame.grid_rowconfigure(0, weight=1)
     tree_frame.grid_columnconfigure(0, weight=1)
 
@@ -1175,19 +1171,22 @@ def setup_gui():
 
     # text pane
     text_frame = ttk.Frame(editor)
-    text_frame.grid(row=0, column=1, sticky="nsew")
     text_frame.grid_rowconfigure(0, weight=1)
     text_frame.grid_columnconfigure(0, weight=1)
 
     text = tk.Text(text_frame, wrap="none", undo=False)
     widgets["text"] = text
     text.grid(row=0, column=0, sticky="nsew")
-    
+
     text_ys = tk.Scrollbar(text_frame, orient="vertical", command=text.yview)
     text_xs = tk.Scrollbar(text_frame, orient="horizontal", command=text.xview)
     text_ys.grid(row=0, column=1, sticky="ns")
     text_xs.grid(row=1, column=0, sticky="ew")
     text.configure(yscrollcommand=text_ys.set, xscrollcommand=text_xs.set)
+
+    # add panes to paned window (with initial sizes)
+    editor.add(tree_frame, weight=1)
+    editor.add(text_frame, weight=4)
 
     # ---- action row
     actions = ttk.Frame(root)
